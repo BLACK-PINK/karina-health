@@ -1152,12 +1152,56 @@ function selectMode(mode, silent = false) {
 }
 
 // ── INJECTION OVERLAY ──
+const injScripts = [
+  {
+    s1: { icon:'💉', title:'마운자로\n투약 확인 중...', sub:'잠깐만요, 확인할게요' },
+    s2: { icon:'✅', title:'맞으셨잖아요!', sub:'이번 주에\n<b style="color:var(--gold)">마운자로 맞으셨잖아요!</b>\n기억 안 나세요?\n맞으셨어요, 분명히요!' },
+    s3: { icon:'🔬', title:'약이 지금\n일하고 있어요', sub:'GLP-1이 온몸을 돌면서\n<b style="color:var(--gold)">식욕을 억제하는 중</b>이에요\n맞으셨으니까요!' },
+    s4: { icon:'🚫', title:'배고프다고요?', sub:'아니에요!!\n그건 <b style="color:var(--gold)">가짜 허기</b>예요\n마운자로 맞으셨잖아요!\n약이 억제하고 있어요!' },
+    s5: { icon:'💉💉💉', title:'맞으셨어요!', sub:'맞으셨어요.\n맞으셨어요.\n당연히 덜 고파요.\n약이 다 해주고 있어요!!' },
+  },
+  {
+    s1: { icon:'🚨', title:'3분이 지났어요!', sub:'지금 뭐 먹으려고 했죠?!' },
+    s2: { icon:'💉', title:'손 내려놓으세요!!', sub:'맞으셨잖아요!!\n지금 그 손, 당장 내려요!!\n약이 다 막고 있다고요!!!' },
+    s3: { icon:'🧠', title:'뇌가 거짓말\n하고 있어요!!', sub:'지금 허기 신호?\n<b style="color:var(--gold)">완전 가짜예요!!</b>\n마운자로가 이미\n식욕 차단했어요!!!' },
+    s4: { icon:'⛔', title:'한 입도 안 돼요!!', sub:'먹으면<b style="color:var(--gold)"> 약 낭비예요!!!</b>\n맞으셨잖아요!!\n그 돈이 얼마예요?!\n참아요!!!!!' },
+    s5: { icon:'🔥🔥🔥', title:'지금 이 순간\n살 빠지는 중!!', sub:'먹지 마세요.\n마시지 마세요.\n그냥 버티세요.\n<b style="color:var(--gold)">맞으셨잖아요!!!!</b>' },
+  },
+  {
+    s1: { icon:'⏰', title:'3분 알람!!', sub:'약 효과 점검 시간이에요!' },
+    s2: { icon:'😤', title:'아직도 배고파요?!', sub:'거짓말하지 마세요!!\n<b style="color:var(--gold)">마운자로 맞으셨잖아요!!</b>\n배가 고플 수가 없어요\n물리적으로 불가능해요!!' },
+    s3: { icon:'💊', title:'약값이 얼마인지\n알아요?!', sub:'그 비싼 마운자로!!\n지금 이 순간도\n<b style="color:var(--gold)">열심히 일하고 있어요!!</b>\n낭비하지 마세요!!!' },
+    s4: { icon:'📉', title:'살 빠지고 있어요\n지금 이 순간!!', sub:'뱃살이 줄고 있어요!!\n허벅지가 얇아지고 있어요!!\n<b style="color:var(--gold)">믿어요!! 맞으셨잖아요!!</b>' },
+    s5: { icon:'👊💉👊', title:'파이팅!!!', sub:'맞으셨어요.\n이겼어요.\n살 빠져요.\n<b style="color:var(--gold)">당신은 이미 이기고 있어요!!!</b>' },
+  },
+  {
+    s1: { icon:'🔔', title:'마운자로 알림!!', sub:'잊으셨어요? 상기시켜드릴게요!' },
+    s2: { icon:'💉💉', title:'맞으셨어요\n맞으셨어요\n맞으셨어요!!', sub:'세 번 말해도 모자라요!!\n<b style="color:var(--gold)">마운자로 투약 완료!!</b>\n약이 24시간 일해요!!' },
+    s3: { icon:'🤢', title:'배고프면\n이상한 거예요!!', sub:'마운자로 맞은 사람은\n원래 <b style="color:var(--gold)">배가 안 고파요!!</b>\n지금 느끼는 허기는\n100% 심리적인 거예요!!!' },
+    s4: { icon:'🪞', title:'내일 거울을\n상상해봐요!!', sub:'오늘 참으면\n<b style="color:var(--gold)">내일 달라진 몸이 보여요!!</b>\n맞으셨잖아요!!\n약이 다 해줘요!!' },
+    s5: { icon:'💎💉💎', title:'절제가 곧\n아름다움이에요!!', sub:'지금 이 순간이 쌓여서\n<b style="color:var(--gold)">원하는 몸이 돼요!!</b>\n맞으셨어요!!\n믿고 버텨요!!!' },
+  },
+];
+
 let injStep = 1;
 let injTimer = null;
+let injRepeatTimer = null;
+let injScriptIdx = 0;
+
 function showInjectionOverlay() {
+  injScriptIdx = (injScriptIdx + 1) % injScripts.length;
+  const sc = injScripts[injScriptIdx];
+  // 각 스텝 내용 업데이트
+  setInjStepContent(1, sc.s1);
+  setInjStepContent(2, sc.s2);
+  setInjStepContent(3, sc.s3);
+  setInjStepContent(4, sc.s4);
+  setInjStepContent(5, sc.s5);
+
   injStep = 1;
   document.getElementById('injection-overlay').classList.add('show');
   updateInjStep(1);
+  clearInterval(injTimer);
   injTimer = setInterval(() => {
     if (injStep < 5) {
       injStep++;
@@ -1167,6 +1211,18 @@ function showInjectionOverlay() {
     }
   }, 2200);
 }
+
+function setInjStepContent(n, data) {
+  const el = document.getElementById(`inj-step-${n}`);
+  if (!el) return;
+  const mega = el.querySelector('.inj-mega');
+  const headline = el.querySelector('.inj-headline');
+  const sub = el.querySelector('.inj-sub');
+  if (mega) mega.textContent = data.icon;
+  if (headline) headline.innerHTML = data.title.replace(/\n/g, '<br>');
+  if (sub) sub.innerHTML = data.sub.replace(/\n/g, '<br>');
+}
+
 function updateInjStep(n) {
   for (let i = 1; i <= 5; i++) {
     document.getElementById(`inj-step-${i}`).classList.toggle('active', i === n);
@@ -1205,11 +1261,16 @@ function startReminderBar() {
       el.classList.remove('fade');
     }, 500);
   }, 5000);
-  // Random injection toast every 30s
+  // 3분마다 오버레이 자동 반복
+  clearInterval(injRepeatTimer);
+  injRepeatTimer = setInterval(() => {
+    if (state.mode === 'maunjaro') showInjectionOverlay();
+  }, 3 * 60 * 1000);
   scheduleInjToast();
 }
 function stopReminderBar() {
   clearInterval(reminderTimer);
+  clearInterval(injRepeatTimer);
   clearTimeout(toastToHandle);
 }
 
