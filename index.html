@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KARINA FIT</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="KARINA FIT">
+<meta name="mobile-web-app-capable" content="yes">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Pretendard:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --deep: #111111;
+    --card: #1a1a1a;
+    --border: #2a2a2a;
+    --rose: #c9a0a0;
+    --rose-bright: #e8b4b8;
+    --gold: #c9a96e;
+    --white: #f5f0f0;
+    --muted: #888;
+    --text: #e0d8d8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Pretendard', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* SPLASH */
+  #splash {
+    position: fixed; inset: 0; z-index: 999;
+    background: var(--black);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px;
+    transition: opacity 0.8s ease;
+  }
+  #splash.hide { opacity: 0; pointer-events: none; }
+  .splash-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px; font-weight: 300;
+    letter-spacing: 12px;
+    color: var(--white);
+    animation: fadeUp 1s ease forwards;
+  }
+  .splash-sub {
+    font-size: 11px; letter-spacing: 4px;
+    color: var(--rose);
+    text-transform: uppercase;
+    animation: fadeUp 1s 0.3s ease both;
+  }
+  .splash-line {
+    width: 60px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--rose), transparent);
+    animation: expand 1s 0.6s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes expand {
+    from { width: 0; opacity: 0; }
+    to { width: 60px; opacity: 1; }
+  }
+
+  /* LAYOUT */
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+  #app.show { display: flex; }
+
+  /* HEADER */
+  .header {
+    padding: 20px 24px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(20px);
+  }
+  .header-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; letter-spacing: 6px;
+    color: var(--white);
+  }
+  .header-logo span { color: var(--rose); }
+  .header-date { font-size: 11px; color: var(--muted); letter-spacing: 2px; }
+
+  /* NAV */
+  .nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(17,17,17,0.98);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex; z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-btn {
+    flex: 1; padding: 12px 0 10px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+    background: none; border: none;
+    cursor: pointer; color: var(--muted);
+    font-size: 9px; letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Pretendard', sans-serif;
+    transition: color 0.3s;
+  }
+  .nav-btn.active { color: var(--rose); }
+  .nav-btn svg { width: 20px; height: 20px; }
+
+  /* PAGES */
+  .page { display: none; padding: 0 0 90px; animation: pageIn 0.4s ease; }
+  .page.active { display: block; }
+  @keyframes pageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 0 16px 16px;
+  }
+  .card-title {
+    font-size: 10px; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  /* HOME PAGE */
+  .hero {
+    padding: 32px 24px 24px;
+    text-align: center;
+  }
+  .hero-greeting {
+    font-size: 12px; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--rose);
+    margin-bottom: 8px;
+  }
+  .hero-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px; font-weight: 300;
+    color: var(--white); letter-spacing: 2px;
+  }
+  .hero-quote {
+    font-size: 12px; color: var(--muted);
+    font-style: italic; margin-top: 8px;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  /* CONDITION SELECTOR */
+  .condition-wrap { padding: 0 16px 16px; }
+  .condition-label {
+    font-size: 10px; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 12px; padding: 0 4px;
+  }
+  .condition-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .condition-card {
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 18px 14px;
+    cursor: pointer; transition: all 0.3s;
+    text-align: center; background: var(--card);
+    position: relative; overflow: hidden;
+  }
+  .condition-card::before {
+    content: ''; position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .condition-card.karina::before { background: radial-gradient(circle at 50% 0%, rgba(201,160,160,0.15), transparent 70%); }
+  .condition-card.maunjaro::before { background: radial-gradient(circle at 50% 0%, rgba(201,169,110,0.15), transparent 70%); }
+  .condition-card.selected.karina { border-color: var(--rose); box-shadow: 0 0 30px rgba(201,160,160,0.2); }
+  .condition-card.selected.maunjaro { border-color: var(--gold); box-shadow: 0 0 30px rgba(201,169,110,0.2); }
+  .condition-card.selected::before { opacity: 1; }
+  .condition-icon { font-size: 28px; margin-bottom: 8px; }
+  .condition-name { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+  .condition-desc { font-size: 10px; color: var(--muted); line-height: 1.5; }
+  .condition-badge {
+    display: inline-block; font-size: 9px;
+    padding: 2px 8px; border-radius: 20px;
+    margin-top: 8px; letter-spacing: 1px;
+  }
+  .karina .condition-badge { background: rgba(201,160,160,0.2); color: var(--rose); }
+  .maunjaro .condition-badge { background: rgba(201,169,110,0.2); color: var(--gold); }
+
+  /* TODAY PLAN CARD */
+  .plan-preview {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; margin: 0 16px 16px;
+    overflow: hidden;
+  }
+  .plan-header {
+    padding: 16px 20px; display: flex;
+    align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .plan-title { font-size: 13px; font-weight: 600; color: var(--white); }
+  .plan-mode-badge {
+    font-size: 9px; padding: 3px 10px;
+    border-radius: 20px; letter-spacing: 1px;
+  }
+  .plan-mode-badge.karina { background: rgba(201,160,160,0.2); color: var(--rose); }
+  .plan-mode-badge.maunjaro { background: rgba(201,169,110,0.2); color: var(--gold); }
+  .plan-items { padding: 4px 0; }
+  .plan-item {
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid rgba(42,42,42,0.5);
+  }
+  .plan-item:last-child { border-bottom: none; }
+  .plan-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .karina-dot { background: var(--rose); }
+  .maunjaro-dot { background: var(--gold); }
+  .plan-item-text { font-size: 12px; color: var(--text); }
+  .plan-item-cal { font-size: 10px; color: var(--muted); margin-left: auto; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 10px; margin: 0 16px 16px;
+  }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 12px; text-align: center;
+  }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; color: var(--white); line-height: 1;
+  }
+  .stat-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 4px; }
+
+  /* WORKOUT PAGE */
+  .section-header {
+    padding: 24px 20px 12px;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 300; color: var(--white);
+  }
+  .section-sub { font-size: 10px; color: var(--muted); letter-spacing: 2px; }
+
+  .exercise-list { padding: 0 16px; }
+  .exercise-category { font-size: 10px; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin: 16px 4px 8px; }
+  .exercise-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px;
+    margin-bottom: 8px; display: flex;
+    align-items: center; gap: 14px;
+    cursor: pointer; transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .exercise-item:active { transform: scale(0.98); }
+  .exercise-item.done { border-color: rgba(201,160,160,0.5); }
+  .exercise-item.done::after {
+    content: '✓'; position: absolute; right: 16px;
+    color: var(--rose); font-size: 16px; font-weight: 600;
+  }
+  .exercise-emoji { font-size: 24px; }
+  .exercise-info { flex: 1; }
+  .exercise-name { font-size: 14px; font-weight: 500; color: var(--white); }
+  .exercise-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .exercise-cal { font-size: 11px; color: var(--rose); }
+
+  /* LOG BUTTON */
+  .log-btn {
+    margin: 16px 16px 8px;
+    width: calc(100% - 32px);
+    padding: 16px;
+    background: linear-gradient(135deg, var(--rose), #b08888);
+    border: none; border-radius: 14px;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--black); cursor: pointer;
+    transition: all 0.3s; position: relative; overflow: hidden;
+  }
+  .log-btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .log-btn:hover::before { opacity: 1; }
+  .log-btn:active { transform: scale(0.98); }
+
+  /* PRAISE OVERLAY */
+  #praise-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.9);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+    text-align: center; padding: 40px;
+  }
+  #praise-overlay.show { opacity: 1; pointer-events: all; }
+  .praise-emoji { font-size: 72px; animation: bounce 0.5s ease infinite alternate; }
+  @keyframes bounce { from { transform: scale(1); } to { transform: scale(1.1); } }
+  .praise-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px; color: var(--white);
+    margin: 20px 0 8px; font-weight: 300;
+  }
+  .praise-msg {
+    font-size: 14px; color: var(--rose);
+    line-height: 1.8; margin-bottom: 32px;
+  }
+  .praise-close {
+    background: var(--rose); color: var(--black);
+    border: none; border-radius: 100px;
+    padding: 12px 36px; font-family: 'Pretendard', sans-serif;
+    font-size: 12px; font-weight: 600; letter-spacing: 2px;
+    cursor: pointer;
+  }
+  .confetti { position: absolute; pointer-events: none; }
+
+  /* DIET PAGE */
+  .diet-tabs {
+    display: flex; margin: 0 16px 16px;
+    background: var(--card); border-radius: 12px; padding: 4px;
+    border: 1px solid var(--border);
+  }
+  .diet-tab {
+    flex: 1; padding: 10px;
+    background: none; border: none;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 11px; letter-spacing: 2px;
+    text-transform: uppercase; cursor: pointer;
+    border-radius: 10px; transition: all 0.3s;
+    color: var(--muted);
+  }
+  .diet-tab.active.karina { background: rgba(201,160,160,0.2); color: var(--rose); }
+  .diet-tab.active.maunjaro { background: rgba(201,169,110,0.2); color: var(--gold); }
+
+  .diet-content { display: none; }
+  .diet-content.active { display: block; }
+
+  .meal-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; margin: 0 16px 10px; overflow: hidden;
+  }
+  .meal-header {
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.03);
+  }
+  .meal-time { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+  .meal-title { font-size: 14px; font-weight: 600; color: var(--white); flex: 1; }
+  .meal-cal-badge {
+    font-size: 10px; padding: 2px 8px;
+    border-radius: 20px; background: rgba(201,160,160,0.15);
+    color: var(--rose);
+  }
+  .meal-body { padding: 12px 16px; }
+  .meal-food { font-size: 12px; color: var(--text); padding: 4px 0; border-bottom: 1px solid rgba(42,42,42,0.4); }
+  .meal-food:last-child { border-bottom: none; }
+  .meal-food-dot { color: var(--rose); margin-right: 8px; }
+
+  .rule-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; margin: 0 16px 10px; padding: 16px;
+  }
+  .rule-item {
+    display: flex; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid rgba(42,42,42,0.4);
+    align-items: flex-start;
+  }
+  .rule-item:last-child { border-bottom: none; }
+  .rule-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; color: var(--gold);
+    line-height: 1; flex-shrink: 0; width: 24px;
+  }
+  .rule-text { font-size: 12px; line-height: 1.7; color: var(--text); }
+  .rule-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* PROGRESS RINGS */
+  .ring-wrap { display: flex; justify-content: center; gap: 24px; padding: 20px 0; }
+  .ring-item { text-align: center; }
+  .ring-svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 6; }
+  .ring-fill { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+  .ring-label { font-size: 20px; font-weight: 600; color: var(--white); }
+  .ring-sublabel { font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 4px; }
+
+  /* SPARKLE ANIMATION */
+  @keyframes sparkle {
+    0% { transform: scale(0) rotate(0deg); opacity: 1; }
+    100% { transform: scale(1.5) rotate(180deg); opacity: 0; }
+  }
+  .sparkle {
+    position: fixed; pointer-events: none; z-index: 600;
+    width: 20px; height: 20px; font-size: 20px;
+    animation: sparkle 1s ease forwards;
+  }
+
+  /* STREAK */
+  .streak-card {
+    margin: 0 16px 16px;
+    background: linear-gradient(135deg, rgba(201,160,160,0.1), rgba(201,169,110,0.1));
+    border: 1px solid rgba(201,160,160,0.3);
+    border-radius: 16px; padding: 18px 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .streak-flame { font-size: 40px; }
+  .streak-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px; color: var(--rose); line-height: 1;
+  }
+  .streak-info { flex: 1; }
+  .streak-label { font-size: 12px; color: var(--white); font-weight: 500; }
+  .streak-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* WATER TRACKER */
+  .water-track {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    justify-content: center; padding: 8px 0;
+  }
+  .water-cup {
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; cursor: pointer; transition: all 0.2s;
+    background: var(--black);
+  }
+  .water-cup.filled { background: rgba(100,180,255,0.15); border-color: #64b4ff; }
+  .water-cup:active { transform: scale(0.9); }
+
+  .scrollable { overflow-y: auto; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-title">KARINA</div>
+  <div class="splash-line"></div>
+  <div class="splash-sub">Fitness & Diet</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="header-logo">K<span>A</span>RINA <span style="font-size:14px;letter-spacing:4px;color:var(--muted)">FIT</span></div>
+    <div class="header-date" id="header-date"></div>
+  </div>
+
+  <!-- HOME PAGE -->
+  <div class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-greeting">Good Day ✦</div>
+      <div class="hero-name">오늘도 빛나게</div>
+      <div class="hero-quote">"Your body deserves the best care" — Karina</div>
+    </div>
+
+    <!-- STREAK -->
+    <div class="streak-card">
+      <div class="streak-flame">🔥</div>
+      <div class="streak-num" id="streak-num">0</div>
+      <div class="streak-info">
+        <div class="streak-label">연속 운동 중</div>
+        <div class="streak-sub" id="streak-sub">오늘 운동을 기록해봐요</div>
+      </div>
+    </div>
+
+    <!-- CONDITION SELECT -->
+    <div class="condition-wrap">
+      <div class="condition-label">오늘의 컨디션으로 선택</div>
+      <div class="condition-grid">
+        <div class="condition-card karina" id="mode-karina" onclick="selectMode('karina')">
+          <div class="condition-icon">🌸</div>
+          <div class="condition-name">카리나 다이어트</div>
+          <div class="condition-desc">고단백 저칼로리<br>1,200~1,500 kcal</div>
+          <span class="condition-badge">체계적</span>
+        </div>
+        <div class="condition-card maunjaro" id="mode-maunjaro" onclick="selectMode('maunjaro')">
+          <div class="condition-icon">🧘</div>
+          <div class="condition-name">마인드 마운자로</div>
+          <div class="condition-desc">마음으로 식욕 조절<br>천천히 먹기 명상</div>
+          <span class="condition-badge">힐링</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODAY PLAN PREVIEW -->
+    <div class="plan-preview" id="plan-preview">
+      <div class="plan-header">
+        <div class="plan-title">오늘의 식단</div>
+        <span class="plan-mode-badge karina" id="plan-badge">KARINA</span>
+      </div>
+      <div class="plan-items" id="plan-items"></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-cal">0</div>
+        <div class="stat-label">소모 kcal</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-workout">0</div>
+        <div class="stat-label">운동 횟수</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-water">0</div>
+        <div class="stat-label">물 잔</div>
+      </div>
+    </div>
+
+    <!-- WATER -->
+    <div class="card">
+      <div class="card-title">💧 수분 섭취 (목표: 8잔)</div>
+      <div class="water-track" id="water-track"></div>
+    </div>
+  </div>
+
+  <!-- WORKOUT PAGE -->
+  <div class="page" id="page-workout">
+    <div class="section-header">
+      <div class="section-title">Workout</div>
+      <div class="section-sub">카리나 루틴</div>
+    </div>
+
+    <div class="exercise-list">
+      <div class="exercise-category">🔥 유산소</div>
+      <div class="exercise-item" id="ex-0" onclick="toggleExercise(0)">
+        <div class="exercise-emoji">🏃</div>
+        <div class="exercise-info">
+          <div class="exercise-name">러닝 / 걷기</div>
+          <div class="exercise-detail">30~40분 · 인터벌 가능</div>
+        </div>
+        <div class="exercise-cal">~250 kcal</div>
+      </div>
+      <div class="exercise-item" id="ex-1" onclick="toggleExercise(1)">
+        <div class="exercise-emoji">💃</div>
+        <div class="exercise-info">
+          <div class="exercise-name">댄스 카디오</div>
+          <div class="exercise-detail">30분 · 아이돌 안무 기반</div>
+        </div>
+        <div class="exercise-cal">~200 kcal</div>
+      </div>
+      <div class="exercise-item" id="ex-2" onclick="toggleExercise(2)">
+        <div class="exercise-emoji">🚴</div>
+        <div class="exercise-info">
+          <div class="exercise-name">실내 자전거</div>
+          <div class="exercise-detail">20~30분 중강도</div>
+        </div>
+        <div class="exercise-cal">~180 kcal</div>
+      </div>
+
+      <div class="exercise-category">💪 근력</div>
+      <div class="exercise-item" id="ex-3" onclick="toggleExercise(3)">
+        <div class="exercise-emoji">🍑</div>
+        <div class="exercise-info">
+          <div class="exercise-name">힙업 스쿼트</div>
+          <div class="exercise-detail">4세트 × 15회</div>
+        </div>
+        <div class="exercise-cal">~120 kcal</div>
+      </div>
+      <div class="exercise-item" id="ex-4" onclick="toggleExercise(4)">
+        <div class="exercise-emoji">🦵</div>
+        <div class="exercise-info">
+          <div class="exercise-name">런지</div>
+          <div class="exercise-detail">3세트 × 12회 (양발)</div>
+        </div>
+        <div class="exercise-cal">~100 kcal</div>
+      </div>
+      <div class="exercise-item" id="ex-5" onclick="toggleExercise(5)">
+        <div class="exercise-emoji">🤸</div>
+        <div class="exercise-info">
+          <div class="exercise-name">플랭크</div>
+          <div class="exercise-detail">3세트 × 1분</div>
+        </div>
+        <div class="exercise-cal">~50 kcal</div>
+      </div>
+      <div class="exercise-item" id="ex-6" onclick="toggleExercise(6)">
+        <div class="exercise-emoji">💫</div>
+        <div class="exercise-info">
+          <div class="exercise-name">사이드 레그 레이즈</div>
+          <div class="exercise-detail">3세트 × 20회</div>
+        </div>
+        <div class="exercise-cal">~60 kcal</div>
+      </div>
+
+      <div class="exercise-category">🌿 스트레칭</div>
+      <div class="exercise-item" id="ex-7" onclick="toggleExercise(7)">
+        <div class="exercise-emoji">🧘</div>
+        <div class="exercise-info">
+          <div class="exercise-name">필라테스 스트레칭</div>
+          <div class="exercise-detail">15분 · 전신 이완</div>
+        </div>
+        <div class="exercise-cal">~40 kcal</div>
+      </div>
+      <div class="exercise-item" id="ex-8" onclick="toggleExercise(8)">
+        <div class="exercise-emoji">🌸</div>
+        <div class="exercise-info">
+          <div class="exercise-name">요가 / 명상</div>
+          <div class="exercise-detail">20분 · 마운자로 모드 추천</div>
+        </div>
+        <div class="exercise-cal">~50 kcal</div>
+      </div>
+    </div>
+
+    <button class="log-btn" onclick="logWorkout()">✦ 오늘 운동 완료</button>
+  </div>
+
+  <!-- DIET PAGE -->
+  <div class="page" id="page-diet">
+    <div class="section-header">
+      <div class="section-title">Diet</div>
+      <div class="section-sub">식단 가이드</div>
+    </div>
+
+    <div class="diet-tabs">
+      <button class="diet-tab active karina" id="tab-karina" onclick="switchDietTab('karina')">🌸 카리나</button>
+      <button class="diet-tab maunjaro" id="tab-maunjaro" onclick="switchDietTab('maunjaro')">🧘 마인드 마운자로</button>
+    </div>
+
+    <!-- KARINA DIET -->
+    <div class="diet-content active" id="diet-karina">
+      <div class="meal-card">
+        <div class="meal-header">
+          <div>
+            <div class="meal-time">아침 · 07:00</div>
+            <div class="meal-title">가벼운 모닝 루틴</div>
+          </div>
+          <span class="meal-cal-badge">~300 kcal</span>
+        </div>
+        <div class="meal-body">
+          <div class="meal-food"><span class="meal-food-dot">·</span>삶은 달걀 2개</div>
+          <div class="meal-food"><span class="meal-food-dot">·</span>그릭 요거트 (무가당) 1컵</div>
+          <div class="meal-food"><span class="meal-food-dot">·</span>방울토마토 10개</div>
+          <div class="meal-food"><span class="meal-food-dot">·</span>아메리카노 (무설탕)</div>
+        </div>
+      </div>
+      <div class="meal-card">
+        <div class="meal-header">
+          <div>
+            <div class="meal-time">점심 · 12:00</div>
+            <div class="meal-title">고단백 메인</div>
+          </div>
+          <span class="meal-cal-badge">~500 kcal</span>
+        </div>
+        <div class="meal-body">
+          <div class="meal-food"><span class="meal-food-dot">·</span>닭가슴살 200g (구이/수비드)</div>
+          <div class="meal-food"><span class="meal-food-dot">·</span>현미밥 반공기 (100g)</div>
+          <div class="meal-food"><span class="meal-food-dot">·</span>브로콜리 + 아스파라거스 무제한</div>
+          <div class="meal-food"><span class="meal-food-dot">·</span>미역국 (무염)</div>
+        </div>
+      </div>
+      <div class="meal-card">
+        <div class="meal-header">
+          <div>
+            <div class="meal-time">간식 · 15:00</div>
+            <div class="meal-title">에너지 보충</div>
+          </div>
+          <span class="meal-cal-badge">~150 kcal</span>
+        </div>
+        <div class="meal-body">
+          <div class="meal-food"><span class="meal-food-dot">·</span>아몬드 15개 또는 프로틴 바</div>
+          <div class="meal-food"><span class="meal-food-dot">·</span>사과 반 개</div>
+          <div class="meal-food"><span class="meal-food-dot">·</span>녹차 또는 물</div>
+        </div>
+      </div>
+      <div class="meal-card">
+        <div class="meal-header">
+          <div>
+            <div class="meal-time">저녁 · 18:00</div>
+            <div class="meal-title">가볍게 마무리</div>
+          </div>
+          <span class="meal-cal-badge">~350 kcal</span>
+        </div>
+        <div class="meal-body">
+          <div class="meal-food"><span class="meal-food-dot">·</span>두부 스테이크 150g</div>
+          <div class="meal-food"><span class="meal-food-dot">·</span>채소 샐러드 (드레싱: 올리브오일+레몬)</div>
+          <div class="meal-food"><span class="meal-food-dot">·</span>고구마 100g</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:0">
+        <div class="card-title">❌ 카리나 절대 피하는 것</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+          <span style="background:rgba(255,80,80,0.1);color:#ff8080;padding:4px 12px;border-radius:20px;font-size:11px">밀가루</span>
+          <span style="background:rgba(255,80,80,0.1);color:#ff8080;padding:4px 12px;border-radius:20px;font-size:11px">설탕</span>
+          <span style="background:rgba(255,80,80,0.1);color:#ff8080;padding:4px 12px;border-radius:20px;font-size:11px">튀긴음식</span>
+          <span style="background:rgba(255,80,80,0.1);color:#ff8080;padding:4px 12px;border-radius:20px;font-size:11px">음주</span>
+          <span style="background:rgba(255,80,80,0.1);color:#ff8080;padding:4px 12px;border-radius:20px;font-size:11px">야식</span>
+          <span style="background:rgba(255,80,80,0.1);color:#ff8080;padding:4px 12px;border-radius:20px;font-size:11px">탄산음료</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAUNJARO DIET -->
+    <div class="diet-content" id="diet-maunjaro">
+      <div class="card">
+        <div class="card-title">💡 마인드 마운자로란?</div>
+        <p style="font-size:12px;line-height:1.8;color:var(--text);margin-top:8px">
+          약 없이 마음과 습관으로 식욕을 조절하는 다이어트법.<br>
+          뇌의 포만감 신호를 활성화시켜 자연스러운 식욕 감소를 유도합니다.
+        </p>
+      </div>
+      <div class="rule-card">
+        <div class="card-title" style="margin-bottom:4px">✦ 7가지 핵심 규칙</div>
+        <div class="rule-item">
+          <div class="rule-num">1</div>
+          <div>
+            <div class="rule-text">한 끼 20분 이상 천천히 먹기</div>
+            <div class="rule-sub">씹는 횟수 30회 이상 · 포만감 신호 유도</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">2</div>
+          <div>
+            <div class="rule-text">80% 포만감에서 멈추기 (하라하치부)</div>
+            <div class="rule-sub">만복이 아닌 '조금 여유' 느낌에서 수저 내려놓기</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">3</div>
+          <div>
+            <div class="rule-text">식사 전 물 2컵 마시기</div>
+            <div class="rule-sub">가짜 허기 구별 · 위장 준비</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">4</div>
+          <div>
+            <div class="rule-text">단백질 → 채소 → 탄수화물 순서로</div>
+            <div class="rule-sub">혈당 스파이크 방지 · 포만감 지속</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">5</div>
+          <div>
+            <div class="rule-text">폰 내려놓고 식사에 집중하기</div>
+            <div class="rule-sub">마음챙김 식사 · 과식 방지</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">6</div>
+          <div>
+            <div class="rule-text">식사 간격 4~5시간 유지</div>
+            <div class="rule-sub">습관적 간식 금지 · 인슐린 안정화</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">7</div>
+          <div>
+            <div class="rule-text">자기 전 '내일 식단' 시각화 명상</div>
+            <div class="rule-sub">3분간 건강한 음식 먹는 장면 상상</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🧘 하루 명상 루틴 (5분)</div>
+        <div style="padding-top:8px">
+          <div style="font-size:12px;color:var(--text);line-height:2">
+            <b style="color:var(--gold)">아침</b> · 일어나자마자 오늘 먹을 건강한 식단 상상<br>
+            <b style="color:var(--gold)">식전</b> · 복식호흡 3번 · "나는 충분하다"<br>
+            <b style="color:var(--gold)">식후</b> · 포만감 느끼며 감사 한 마디<br>
+            <b style="color:var(--gold)">취침전</b> · 오늘 잘한 것 3가지 떠올리기
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS PAGE -->
+  <div class="page" id="page-progress">
+    <div class="section-header">
+      <div class="section-title">Progress</div>
+      <div class="section-sub">나의 기록</div>
+    </div>
+
+    <!-- RINGS -->
+    <div class="card">
+      <div class="card-title">오늘의 달성률</div>
+      <div class="ring-wrap">
+        <div class="ring-item">
+          <svg class="ring-svg" width="80" height="80" viewBox="0 0 80 80">
+            <circle class="ring-bg" cx="40" cy="40" r="32"/>
+            <circle class="ring-fill" id="ring-exercise" cx="40" cy="40" r="32"
+              stroke="var(--rose)" stroke-dasharray="201" stroke-dashoffset="201"/>
+          </svg>
+          <div class="ring-label" id="ring-ex-pct">0%</div>
+          <div class="ring-sublabel">운동</div>
+        </div>
+        <div class="ring-item">
+          <svg class="ring-svg" width="80" height="80" viewBox="0 0 80 80">
+            <circle class="ring-bg" cx="40" cy="40" r="32"/>
+            <circle class="ring-fill" id="ring-water" cx="40" cy="40" r="32"
+              stroke="#64b4ff" stroke-dasharray="201" stroke-dashoffset="201"/>
+          </svg>
+          <div class="ring-label" id="ring-water-pct">0%</div>
+          <div class="ring-sublabel">수분</div>
+        </div>
+        <div class="ring-item">
+          <svg class="ring-svg" width="80" height="80" viewBox="0 0 80 80">
+            <circle class="ring-bg" cx="40" cy="40" r="32"/>
+            <circle class="ring-fill" id="ring-diet" cx="40" cy="40" r="32"
+              stroke="var(--gold)" stroke-dasharray="201" stroke-dashoffset="201"/>
+          </svg>
+          <div class="ring-label" id="ring-diet-pct">0%</div>
+          <div class="ring-sublabel">식단</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEKLY CALENDAR -->
+    <div class="card">
+      <div class="card-title">이번 주 운동 기록</div>
+      <div style="display:flex;gap:6px;justify-content:center;margin-top:8px" id="weekly-cal"></div>
+    </div>
+
+    <!-- KARINA TIPS -->
+    <div class="card">
+      <div class="card-title">✦ 카리나의 바디케어 시크릿</div>
+      <div style="margin-top:8px">
+        <div style="font-size:12px;color:var(--text);line-height:2.2">
+          🌸 하루 물 2L 이상 필수<br>
+          💪 매일 30분 이상 유산소<br>
+          🛁 운동 후 반신욕 10분<br>
+          😴 11시 이전 취침 (피부+대사)<br>
+          🧴 운동 후 단백질 30분 내 섭취<br>
+          🚶 엘리베이터 대신 계단 선택
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="background:linear-gradient(135deg,rgba(201,160,160,0.08),rgba(201,169,110,0.08))">
+      <div style="text-align:center;padding:8px 0">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--white);margin-bottom:8px">
+          "진짜 예쁜 건 건강한 것"
+        </div>
+        <div style="font-size:10px;color:var(--rose);letter-spacing:2px">— KARINA</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="nav">
+    <button class="nav-btn active" id="nav-home" onclick="goPage('home')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      홈
+    </button>
+    <button class="nav-btn" id="nav-workout" onclick="goPage('workout')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+      운동
+    </button>
+    <button class="nav-btn" id="nav-diet" onclick="goPage('diet')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-8-15.03-8-15.03 0h15.03zM1.02 17h15v2h-15z"/></svg>
+      식단
+    </button>
+    <button class="nav-btn" id="nav-progress" onclick="goPage('progress')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+      기록
+    </button>
+  </nav>
+</div>
+
+<!-- PRAISE OVERLAY -->
+<div id="praise-overlay">
+  <div class="praise-emoji" id="praise-emoji">🌟</div>
+  <div class="praise-title" id="praise-title">완벽해!</div>
+  <div class="praise-msg" id="praise-msg"></div>
+  <button class="praise-close" onclick="closePraise()">계속하기</button>
+</div>
+
+<script>
+// STATE
+let state = {
+  mode: 'karina',
+  exerciseDone: new Set(),
+  waterCount: 0,
+  streak: parseInt(localStorage.getItem('streak') || '0'),
+  lastWorkout: localStorage.getItem('lastWorkout') || '',
+  totalWorkouts: parseInt(localStorage.getItem('totalWorkouts') || '0'),
+  calBurned: 0,
+};
+
+const exerciseCals = [250, 200, 180, 120, 100, 50, 60, 40, 50];
+
+const karinaPlans = [
+  { name: '아침: 삶은달걀 + 그릭요거트', cal: '300 kcal' },
+  { name: '점심: 닭가슴살 + 현미밥', cal: '500 kcal' },
+  { name: '간식: 아몬드 15개', cal: '150 kcal' },
+  { name: '저녁: 두부스테이크 + 샐러드', cal: '350 kcal' },
+];
+const maunjaroPlans = [
+  { name: '🧘 식전 물 2컵 + 복식호흡 3회', cal: '' },
+  { name: '단백질 먼저 · 20분 이상 천천히', cal: '' },
+  { name: '80% 포만감에서 멈추기', cal: '' },
+  { name: '저녁 식단 시각화 명상', cal: '' },
+];
+
+const praiseMessages = [
+  { emoji: '✨', title: '완벽해!', msg: '오늘도 이렇게 열심히 하다니\n카리나 못지않은 노력이야!\n너 진짜 대단해 🌸' },
+  { emoji: '🔥', title: '대박이야!', msg: '이 정도 의지력이면\n누가 못 말리겠어?\n오늘 너무 잘했어 진짜로!' },
+  { emoji: '💫', title: '빛나고 있어!', msg: '매일 이렇게 하는 게\n얼마나 힘든 줄 알면서도\n해내는 네가 너무 멋있어 🌟' },
+  { emoji: '🌸', title: '최고야!', msg: '카리나도 인정할 것 같아!\n이 노력이 쌓여서\n반드시 결과로 나타날 거야 💪' },
+  { emoji: '👑', title: '여신이다!', msg: '오늘 운동한 나, 진짜 최고!\n몸도 마음도 건강해지는\n이 과정이 이미 성공이야 ✨' },
+  { emoji: '💎', title: '눈부셔!', msg: '힘들었을 텐데 해냈어!\n이런 날들이 모여서\n진짜 카리나 바디 만들어져 🔥' },
+];
+
+// INIT
+window.onload = () => {
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('hide');
+    setTimeout(() => {
+      document.getElementById('app').classList.add('show');
+      initApp();
+    }, 400);
+  }, 1200);
+};
+
+function initApp() {
+  updateDate();
+  initWater();
+  initWeekly();
+  selectMode(state.mode);
+  updateStreak();
+  updateStats();
+}
+
+function updateDate() {
+  const d = new Date();
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('header-date').textContent =
+    `${d.getMonth()+1}.${d.getDate()} ${days[d.getDay()]}요일`;
+}
+
+function selectMode(mode) {
+  state.mode = mode;
+  localStorage.setItem('mode', mode);
+  document.getElementById('mode-karina').classList.toggle('selected', mode === 'karina');
+  document.getElementById('mode-maunjaro').classList.toggle('selected', mode === 'maunjaro');
+
+  const badge = document.getElementById('plan-badge');
+  badge.className = `plan-mode-badge ${mode}`;
+  badge.textContent = mode === 'karina' ? 'KARINA' : 'MAUNJARO';
+
+  const items = document.getElementById('plan-items');
+  const plans = mode === 'karina' ? karinaPlans : maunjaroPlans;
+  const dotClass = mode === 'karina' ? 'karina-dot' : 'maunjaro-dot';
+  items.innerHTML = plans.map(p => `
+    <div class="plan-item">
+      <div class="plan-dot ${dotClass}"></div>
+      <div class="plan-item-text">${p.name}</div>
+      <div class="plan-item-cal">${p.cal}</div>
+    </div>
+  `).join('');
+}
+
+function initWater() {
+  const wrap = document.getElementById('water-track');
+  wrap.innerHTML = '';
+  for (let i = 0; i < 8; i++) {
+    const cup = document.createElement('div');
+    cup.className = 'water-cup' + (i < state.waterCount ? ' filled' : '');
+    cup.textContent = '💧';
+    cup.onclick = () => toggleWater(i);
+    wrap.appendChild(cup);
+  }
+  document.getElementById('stat-water').textContent = state.waterCount;
+}
+
+function toggleWater(idx) {
+  state.waterCount = idx < state.waterCount ? idx : idx + 1;
+  initWater();
+  updateRings();
+  // sparkle on fill
+  if (state.waterCount > 0) spawnSparkle();
+}
+
+function toggleExercise(idx) {
+  const el = document.getElementById(`ex-${idx}`);
+  if (state.exerciseDone.has(idx)) {
+    state.exerciseDone.delete(idx);
+    el.classList.remove('done');
+    state.calBurned -= exerciseCals[idx];
+  } else {
+    state.exerciseDone.add(idx);
+    el.classList.add('done');
+    state.calBurned += exerciseCals[idx];
+    spawnSparkle();
+  }
+  updateStats();
+  updateRings();
+}
+
+function logWorkout() {
+  if (state.exerciseDone.size === 0) {
+    showPraise(0, true);
+    return;
+  }
+
+  const today = new Date().toDateString();
+  if (state.lastWorkout !== today) {
+    state.streak++;
+    state.lastWorkout = today;
+    state.totalWorkouts++;
+    localStorage.setItem('streak', state.streak);
+    localStorage.setItem('lastWorkout', today);
+    localStorage.setItem('totalWorkouts', state.totalWorkouts);
+  }
+
+  updateStreak();
+  updateStats();
+  updateRings();
+
+  const idx = Math.floor(Math.random() * praiseMessages.length);
+  showPraise(idx, false);
+}
+
+function showPraise(idx, gentle) {
+  const p = gentle
+    ? { emoji: '💪', title: '도전해봐!', msg: '운동 항목을 체크하고\n완료 버튼을 눌러줘!\n오늘도 할 수 있어 🌸' }
+    : praiseMessages[idx];
+
+  document.getElementById('praise-emoji').textContent = p.emoji;
+  document.getElementById('praise-title').textContent = p.title;
+  document.getElementById('praise-msg').textContent = p.msg;
+  document.getElementById('praise-overlay').classList.add('show');
+
+  if (!gentle) {
+    for (let i = 0; i < 20; i++) spawnConfetti();
+  }
+}
+
+function closePraise() {
+  document.getElementById('praise-overlay').classList.remove('show');
+}
+
+function updateStreak() {
+  document.getElementById('streak-num').textContent = state.streak;
+  document.getElementById('streak-sub').textContent =
+    state.streak === 0 ? '오늘 운동을 기록해봐요' :
+    state.streak < 3 ? '좋은 시작이야! 계속해봐' :
+    state.streak < 7 ? '대단해! 습관이 되고 있어' :
+    state.streak < 14 ? '이미 카리나 레벨!' : '전설이다... 🏆';
+}
+
+function updateStats() {
+  document.getElementById('stat-cal').textContent = state.calBurned;
+  document.getElementById('stat-workout').textContent = state.exerciseDone.size;
+}
+
+function updateRings() {
+  const exPct = Math.min(100, Math.round((state.exerciseDone.size / 4) * 100));
+  const waterPct = Math.min(100, Math.round((state.waterCount / 8) * 100));
+  const dietPct = state.mode === 'karina' ? 65 : 80; // static demo
+
+  setRing('ring-exercise', exPct);
+  setRing('ring-water', waterPct);
+  setRing('ring-diet', dietPct);
+
+  document.getElementById('ring-ex-pct').textContent = exPct + '%';
+  document.getElementById('ring-water-pct').textContent = waterPct + '%';
+  document.getElementById('ring-diet-pct').textContent = dietPct + '%';
+}
+
+function setRing(id, pct) {
+  const circ = 201;
+  const offset = circ - (circ * pct / 100);
+  document.getElementById(id).style.strokeDashoffset = offset;
+}
+
+function initWeekly() {
+  const days = ['월','화','수','목','금','토','일'];
+  const wrap = document.getElementById('weekly-cal');
+  const today = new Date().getDay();
+  wrap.innerHTML = days.map((d, i) => `
+    <div style="text-align:center;flex:1">
+      <div style="font-size:9px;color:var(--muted);margin-bottom:6px">${d}</div>
+      <div style="width:36px;height:36px;border-radius:50%;
+        background:${i < (today === 0 ? 6 : today - 1) ? 'rgba(201,160,160,0.3)' : 'var(--border)'};
+        display:flex;align-items:center;justify-content:center;
+        font-size:16px;margin:0 auto">
+        ${i < (today === 0 ? 6 : today - 1) ? '✓' : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  document.getElementById(`nav-${name}`).classList.add('active');
+  if (name === 'progress') updateRings();
+}
+
+function switchDietTab(tab) {
+  document.querySelectorAll('.diet-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.diet-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active', tab);
+  document.getElementById(`diet-${tab}`).classList.add('active');
+}
+
+function spawnSparkle() {
+  const el = document.createElement('div');
+  el.className = 'sparkle';
+  const emojis = ['✨','⭐','🌟','💫','🌸'];
+  el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+  el.style.left = Math.random() * window.innerWidth + 'px';
+  el.style.top = Math.random() * window.innerHeight * 0.6 + 100 + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+// PWA Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+
+function spawnConfetti() {
+  const el = document.createElement('div');
+  el.className = 'sparkle';
+  const items = ['🌸','✨','💕','⭐','🌟','💖','💎','🎀'];
+  el.textContent = items[Math.floor(Math.random() * items.length)];
+  el.style.left = Math.random() * window.innerWidth + 'px';
+  el.style.top = Math.random() * window.innerHeight + 'px';
+  el.style.animationDuration = (0.5 + Math.random()) + 's';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1500);
+}
+</script>
+</body>
+</html>
