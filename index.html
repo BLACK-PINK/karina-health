@@ -637,6 +637,13 @@
     <div class="section-header">
       <div class="section-title">Workout</div>
       <div class="section-sub">카리나 루틴</div>
+      <button onclick="resetToday()" style="
+        margin-left:auto; padding:6px 14px;
+        background:none; border:1px solid var(--border);
+        border-radius:100px; font-family:'Pretendard',sans-serif;
+        font-size:11px; letter-spacing:1px; color:var(--muted);
+        cursor:pointer; white-space:nowrap;
+      ">↺ 초기화</button>
     </div>
 
     <div class="exercise-list">
@@ -720,17 +727,6 @@
     </div>
 
     <button class="log-btn" onclick="logWorkout()">✦ 오늘 운동 완료</button>
-    <button onclick="resetToday()" style="
-      display:block; width:calc(100% - 32px); margin: 0 16px 8px;
-      padding:12px; background:none;
-      border:1px solid var(--border); border-radius:14px;
-      font-family:'Pretendard',sans-serif; font-size:12px;
-      letter-spacing:2px; text-transform:uppercase;
-      color:var(--muted); cursor:pointer; transition:all 0.3s;
-    " onmouseover="this.style.borderColor='var(--rose)';this.style.color='var(--rose)'"
-       onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
-      ↺ 오늘 운동 초기화
-    </button>
   </div>
 
   <!-- DIET PAGE -->
@@ -1110,7 +1106,7 @@ function initApp() {
   updateDate();
   initWater();
   initWeekly();
-  selectMode(state.mode);
+  selectMode(state.mode, true);
   updateStreak();
   updateStats();
 }
@@ -1122,8 +1118,7 @@ function updateDate() {
     `${d.getMonth()+1}.${d.getDate()} ${days[d.getDay()]}요일`;
 }
 
-function selectMode(mode) {
-  const prev = state.mode;
+function selectMode(mode, silent = false) {
   state.mode = mode;
   localStorage.setItem('mode', mode);
   document.getElementById('mode-karina').classList.toggle('selected', mode === 'karina');
@@ -1132,7 +1127,7 @@ function selectMode(mode) {
   const bar = document.getElementById('maunjaro-bar');
   if (mode === 'maunjaro') {
     bar.classList.add('show');
-    if (prev !== 'maunjaro') showInjectionOverlay();
+    if (!silent) showInjectionOverlay();
     startReminderBar();
   } else {
     bar.classList.remove('show');
