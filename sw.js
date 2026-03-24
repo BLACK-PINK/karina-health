@@ -1,4 +1,4 @@
-const CACHE = 'karina-fit-v1';
+const CACHE = 'karina-fit-v2';
 const ASSETS = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', e => {
