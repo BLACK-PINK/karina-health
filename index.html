@@ -460,7 +460,8 @@
     transition: all 0.5s ease;
     pointer-events: none;
   }
-  .inj-step.active { opacity: 1; transform: scale(1); pointer-events: all; }
+  .inj-step.active { opacity: 1; transform: scale(1); pointer-events: none; }
+  #injection-overlay.show .inj-step.active { pointer-events: all; }
   .inj-mega { font-size: 96px; margin-bottom: 20px; animation: injPulse 0.6s ease infinite alternate; }
   @keyframes injPulse { from { transform: scale(1); } to { transform: scale(1.12); } }
   .inj-headline {
