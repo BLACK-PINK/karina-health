@@ -438,6 +438,107 @@
   .water-cup:active { transform: scale(0.9); }
 
   .scrollable { overflow-y: auto; }
+
+  /* INJECTION OVERLAY */
+  #injection-overlay {
+    position: fixed; inset: 0; z-index: 600;
+    background: rgba(0,0,0,0.97);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+    text-align: center; padding: 40px;
+    overflow: hidden;
+  }
+  #injection-overlay.show { opacity: 1; pointer-events: all; }
+  .inj-step {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px;
+    opacity: 0; transform: scale(0.9);
+    transition: all 0.5s ease;
+    pointer-events: none;
+  }
+  .inj-step.active { opacity: 1; transform: scale(1); pointer-events: all; }
+  .inj-mega { font-size: 96px; margin-bottom: 20px; animation: injPulse 0.6s ease infinite alternate; }
+  @keyframes injPulse { from { transform: scale(1); } to { transform: scale(1.12); } }
+  .inj-headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 38px; font-weight: 600;
+    color: var(--gold); line-height: 1.2;
+    margin-bottom: 12px; letter-spacing: 1px;
+  }
+  .inj-sub {
+    font-size: 15px; color: var(--text);
+    line-height: 1.9; margin-bottom: 28px;
+  }
+  .inj-confirm-row {
+    display: flex; gap: 10px; align-items: center;
+    background: rgba(201,169,110,0.12);
+    border: 1px solid rgba(201,169,110,0.4);
+    border-radius: 100px; padding: 10px 24px;
+    font-size: 13px; color: var(--gold); letter-spacing: 1px;
+  }
+  .inj-progress {
+    position: absolute; bottom: 60px;
+    display: flex; gap: 8px;
+  }
+  .inj-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border); transition: background 0.3s;
+  }
+  .inj-dot.on { background: var(--gold); }
+  .inj-close-btn {
+    background: linear-gradient(135deg, var(--gold), #b8913a);
+    border: none; border-radius: 100px;
+    padding: 14px 40px; font-family: 'Pretendard', sans-serif;
+    font-size: 14px; font-weight: 700; letter-spacing: 2px;
+    color: var(--black); cursor: pointer; margin-top: 8px;
+  }
+
+  /* MAUNJARO REMINDER BAR */
+  #maunjaro-bar {
+    display: none; margin: 0 16px 12px;
+    background: linear-gradient(135deg, rgba(201,169,110,0.15), rgba(201,169,110,0.05));
+    border: 1px solid rgba(201,169,110,0.35);
+    border-radius: 14px; padding: 12px 16px;
+    position: relative; overflow: hidden;
+  }
+  #maunjaro-bar.show { display: block; }
+  #maunjaro-bar::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--gold);
+  }
+  .mbar-label {
+    font-size: 9px; color: var(--gold); letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .mbar-msg {
+    font-size: 13px; color: var(--text); font-weight: 500;
+    transition: opacity 0.5s;
+  }
+  .mbar-msg.fade { opacity: 0; }
+
+  /* TOAST REMINDER */
+  .inj-toast {
+    position: fixed; bottom: 100px; left: 16px; right: 16px;
+    background: rgba(201,169,110,0.18);
+    border: 1px solid rgba(201,169,110,0.5);
+    border-radius: 14px; padding: 12px 16px;
+    font-size: 13px; color: var(--gold);
+    z-index: 400; text-align: center;
+    transform: translateY(20px); opacity: 0;
+    transition: all 0.4s ease;
+    pointer-events: none;
+  }
+  .inj-toast.show { transform: translateY(0); opacity: 1; }
+
+  @keyframes goldGlow {
+    0%,100% { box-shadow: 0 0 0 rgba(201,169,110,0); }
+    50% { box-shadow: 0 0 20px rgba(201,169,110,0.3); }
+  }
+  .maunjaro.selected { animation: goldGlow 2s ease infinite; }
 </style>
 </head>
 <body>
@@ -485,12 +586,18 @@
           <span class="condition-badge">체계적</span>
         </div>
         <div class="condition-card maunjaro" id="mode-maunjaro" onclick="selectMode('maunjaro')">
-          <div class="condition-icon">🧘</div>
-          <div class="condition-name">마인드 마운자로</div>
-          <div class="condition-desc">마음으로 식욕 조절<br>천천히 먹기 명상</div>
-          <span class="condition-badge">힐링</span>
+          <div class="condition-icon">💉</div>
+          <div class="condition-name">마운자로 투약 모드</div>
+          <div class="condition-desc">맞으셨잖아요!<br>약이 지금 일하는 중</div>
+          <span class="condition-badge">투약 완료 ✓</span>
         </div>
       </div>
+    </div>
+
+    <!-- MAUNJARO REMINDER BAR -->
+    <div id="maunjaro-bar">
+      <div class="mbar-label">💉 마운자로 투약 상태</div>
+      <div class="mbar-msg" id="mbar-msg">약이 지금 이 순간도 열심히 일하고 있어요</div>
     </div>
 
     <!-- TODAY PLAN PREVIEW -->
@@ -613,6 +720,17 @@
     </div>
 
     <button class="log-btn" onclick="logWorkout()">✦ 오늘 운동 완료</button>
+    <button onclick="resetToday()" style="
+      display:block; width:calc(100% - 32px); margin: 0 16px 8px;
+      padding:12px; background:none;
+      border:1px solid var(--border); border-radius:14px;
+      font-family:'Pretendard',sans-serif; font-size:12px;
+      letter-spacing:2px; text-transform:uppercase;
+      color:var(--muted); cursor:pointer; transition:all 0.3s;
+    " onmouseover="this.style.borderColor='var(--rose)';this.style.color='var(--rose)'"
+       onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+      ↺ 오늘 운동 초기화
+    </button>
   </div>
 
   <!-- DIET PAGE -->
@@ -702,74 +820,93 @@
 
     <!-- MAUNJARO DIET -->
     <div class="diet-content" id="diet-maunjaro">
-      <div class="card">
-        <div class="card-title">💡 마인드 마운자로란?</div>
-        <p style="font-size:12px;line-height:1.8;color:var(--text);margin-top:8px">
-          약 없이 마음과 습관으로 식욕을 조절하는 다이어트법.<br>
-          뇌의 포만감 신호를 활성화시켜 자연스러운 식욕 감소를 유도합니다.
-        </p>
+      <!-- HEADER CONFIRMATION CARD -->
+      <div class="card" style="background:linear-gradient(135deg,rgba(201,169,110,0.15),rgba(201,169,110,0.05));border-color:rgba(201,169,110,0.4)">
+        <div style="text-align:center;padding:8px 0">
+          <div style="font-size:48px;margin-bottom:8px">💉</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:6px">투약 완료 상태</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.9">
+            <strong style="color:var(--gold)">맞으셨잖아요!</strong> 마운자로가 지금 이 순간도<br>
+            열심히 식욕을 억제하고 있어요.<br>
+            덜 먹게 되는 건 완전히 <strong style="color:var(--gold)">정상이에요.</strong>
+          </div>
+        </div>
       </div>
+
+      <!-- STEP BY STEP GUIDE -->
       <div class="rule-card">
-        <div class="card-title" style="margin-bottom:4px">✦ 7가지 핵심 규칙</div>
+        <div class="card-title" style="margin-bottom:4px;color:var(--gold)">💉 투약 후 단계별 가이드</div>
         <div class="rule-item">
-          <div class="rule-num">1</div>
+          <div class="rule-num" style="color:var(--gold)">1</div>
           <div>
-            <div class="rule-text">한 끼 20분 이상 천천히 먹기</div>
-            <div class="rule-sub">씹는 횟수 30회 이상 · 포만감 신호 유도</div>
+            <div class="rule-text">투약 직후 — 과식 절대 금지</div>
+            <div class="rule-sub">맞으셨잖아요! 약이 작동 시작 중 · 위장 자극 주의</div>
           </div>
         </div>
         <div class="rule-item">
-          <div class="rule-num">2</div>
+          <div class="rule-num" style="color:var(--gold)">2</div>
           <div>
-            <div class="rule-text">80% 포만감에서 멈추기 (하라하치부)</div>
-            <div class="rule-sub">만복이 아닌 '조금 여유' 느낌에서 수저 내려놓기</div>
+            <div class="rule-text">1~3일차 — 식욕이 줄어드는 게 느껴질 거예요</div>
+            <div class="rule-sub">맞으셨잖아요! 당연한 거예요 · 약 효과예요!</div>
           </div>
         </div>
         <div class="rule-item">
-          <div class="rule-num">3</div>
+          <div class="rule-num" style="color:var(--gold)">3</div>
           <div>
-            <div class="rule-text">식사 전 물 2컵 마시기</div>
-            <div class="rule-sub">가짜 허기 구별 · 위장 준비</div>
+            <div class="rule-text">배고프다는 느낌? → 가짜 허기!</div>
+            <div class="rule-sub">마운자로 맞으셨잖아요 · 뇌가 착각하는 것뿐이에요</div>
           </div>
         </div>
         <div class="rule-item">
-          <div class="rule-num">4</div>
+          <div class="rule-num" style="color:var(--gold)">4</div>
           <div>
-            <div class="rule-text">단백질 → 채소 → 탄수화물 순서로</div>
-            <div class="rule-sub">혈당 스파이크 방지 · 포만감 지속</div>
+            <div class="rule-text">소량씩 천천히 — 위가 예민해진 상태</div>
+            <div class="rule-sub">약 때문에 위장 운동 느려짐 · 소식이 정답!</div>
           </div>
         </div>
         <div class="rule-item">
-          <div class="rule-num">5</div>
+          <div class="rule-num" style="color:var(--gold)">5</div>
           <div>
-            <div class="rule-text">폰 내려놓고 식사에 집중하기</div>
-            <div class="rule-sub">마음챙김 식사 · 과식 방지</div>
+            <div class="rule-text">단백질 → 채소 → 탄수화물 순서</div>
+            <div class="rule-sub">맞으셨으니까 혈당 관리 더 쉬워요 · 약이 도와줘요!</div>
           </div>
         </div>
         <div class="rule-item">
-          <div class="rule-num">6</div>
+          <div class="rule-num" style="color:var(--gold)">6</div>
           <div>
-            <div class="rule-text">식사 간격 4~5시간 유지</div>
-            <div class="rule-sub">습관적 간식 금지 · 인슐린 안정화</div>
+            <div class="rule-text">물 충분히 — 2L 이상 필수</div>
+            <div class="rule-sub">맞으셨잖아요 · 수분 보충이 더 중요해요</div>
           </div>
         </div>
         <div class="rule-item">
-          <div class="rule-num">7</div>
+          <div class="rule-num" style="color:var(--gold)">7</div>
           <div>
-            <div class="rule-text">자기 전 '내일 식단' 시각화 명상</div>
-            <div class="rule-sub">3분간 건강한 음식 먹는 장면 상상</div>
+            <div class="rule-text">살 안 빠지는 느낌? → 빠지고 있어요!</div>
+            <div class="rule-sub">맞으셨잖아요!! 약이 일하고 있어요 · 믿어요!!</div>
           </div>
         </div>
       </div>
+
+      <!-- SELF AFFIRMATION CARD -->
       <div class="card">
-        <div class="card-title">🧘 하루 명상 루틴 (5분)</div>
+        <div class="card-title" style="color:var(--gold)">💉 지금 이 순간 되뇌기</div>
         <div style="padding-top:8px">
-          <div style="font-size:12px;color:var(--text);line-height:2">
-            <b style="color:var(--gold)">아침</b> · 일어나자마자 오늘 먹을 건강한 식단 상상<br>
-            <b style="color:var(--gold)">식전</b> · 복식호흡 3번 · "나는 충분하다"<br>
-            <b style="color:var(--gold)">식후</b> · 포만감 느끼며 감사 한 마디<br>
-            <b style="color:var(--gold)">취침전</b> · 오늘 잘한 것 3가지 떠올리기
+          <div style="font-size:13px;color:var(--text);line-height:2.4;text-align:center">
+            <span style="color:var(--gold);font-weight:600">"나는 마운자로를 맞았다"</span><br>
+            <span style="color:var(--gold);font-weight:600">"약이 지금 일하고 있다"</span><br>
+            <span style="color:var(--gold);font-weight:600">"배고픔은 가짜다"</span><br>
+            <span style="color:var(--gold);font-weight:600">"덜 먹는 게 맞다"</span><br>
+            <span style="color:var(--gold);font-weight:600">"살은 이미 빠지고 있다"</span>
           </div>
+        </div>
+      </div>
+
+      <!-- FINAL REMINDER -->
+      <div class="card" style="background:rgba(201,169,110,0.08);border-color:rgba(201,169,110,0.3)">
+        <div style="text-align:center;padding:4px 0">
+          <div style="font-size:32px;margin-bottom:8px">💉💉💉</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold)">맞으셨잖아요!</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:1px">YOU ALREADY TOOK IT · TRUST THE PROCESS</div>
         </div>
       </div>
     </div>
@@ -868,6 +1005,52 @@
   </nav>
 </div>
 
+<!-- INJECTION OVERLAY -->
+<div id="injection-overlay">
+  <!-- Step 1 -->
+  <div class="inj-step active" id="inj-step-1">
+    <div class="inj-mega">💉</div>
+    <div class="inj-headline">마운자로<br>투약 확인 중...</div>
+    <div class="inj-sub">잠깐만요, 확인할게요</div>
+  </div>
+  <!-- Step 2 -->
+  <div class="inj-step" id="inj-step-2">
+    <div class="inj-mega">✅</div>
+    <div class="inj-headline">맞으셨잖아요!</div>
+    <div class="inj-sub">이번 주에<br><strong style="color:var(--gold)">마운자로 맞으셨잖아요!</strong><br>기억 안 나세요?<br>맞으셨어요, 분명히요!</div>
+  </div>
+  <!-- Step 3 -->
+  <div class="inj-step" id="inj-step-3">
+    <div class="inj-mega">🔬</div>
+    <div class="inj-headline">약이 지금<br>일하고 있어요</div>
+    <div class="inj-sub">GLP-1이 온몸을 돌면서<br><strong style="color:var(--gold)">식욕을 억제하는 중</strong>이에요<br>맞으셨으니까요!</div>
+    <div class="inj-confirm-row">💉 투약 후 활성화 상태 · ACTIVE</div>
+  </div>
+  <!-- Step 4 -->
+  <div class="inj-step" id="inj-step-4">
+    <div class="inj-mega">🚫</div>
+    <div class="inj-headline">배고프다고요?</div>
+    <div class="inj-sub">아니에요!!<br>그건 <strong style="color:var(--gold)">가짜 허기</strong>예요<br>마운자로 맞으셨잖아요!<br>약이 억제하고 있어요!</div>
+  </div>
+  <!-- Step 5 -->
+  <div class="inj-step" id="inj-step-5">
+    <div style="font-size:60px;margin-bottom:16px">💉💉💉</div>
+    <div class="inj-headline" style="font-size:44px">맞으셨어요!</div>
+    <div class="inj-sub" style="font-size:17px;color:var(--gold);font-weight:600">
+      맞으셨어요.<br>맞으셨어요.<br>당연히 덜 고파요.<br>약이 다 해주고 있어요!!
+    </div>
+    <button class="inj-close-btn" onclick="closeInjectionOverlay()">💉 알겠어요, 시작할게요!</button>
+  </div>
+  <!-- Progress dots -->
+  <div class="inj-progress" id="inj-dots">
+    <div class="inj-dot on"></div>
+    <div class="inj-dot"></div>
+    <div class="inj-dot"></div>
+    <div class="inj-dot"></div>
+    <div class="inj-dot"></div>
+  </div>
+</div>
+
 <!-- PRAISE OVERLAY -->
 <div id="praise-overlay">
   <div class="praise-emoji" id="praise-emoji">🌟</div>
@@ -879,7 +1062,7 @@
 <script>
 // STATE
 let state = {
-  mode: 'karina',
+  mode: localStorage.getItem('mode') || 'karina',
   exerciseDone: new Set(),
   waterCount: 0,
   streak: parseInt(localStorage.getItem('streak') || '0'),
@@ -940,14 +1123,25 @@ function updateDate() {
 }
 
 function selectMode(mode) {
+  const prev = state.mode;
   state.mode = mode;
   localStorage.setItem('mode', mode);
   document.getElementById('mode-karina').classList.toggle('selected', mode === 'karina');
   document.getElementById('mode-maunjaro').classList.toggle('selected', mode === 'maunjaro');
 
+  const bar = document.getElementById('maunjaro-bar');
+  if (mode === 'maunjaro') {
+    bar.classList.add('show');
+    if (prev !== 'maunjaro') showInjectionOverlay();
+    startReminderBar();
+  } else {
+    bar.classList.remove('show');
+    stopReminderBar();
+  }
+
   const badge = document.getElementById('plan-badge');
   badge.className = `plan-mode-badge ${mode}`;
-  badge.textContent = mode === 'karina' ? 'KARINA' : 'MAUNJARO';
+  badge.textContent = mode === 'karina' ? 'KARINA' : '💉 MAUNJARO';
 
   const items = document.getElementById('plan-items');
   const plans = mode === 'karina' ? karinaPlans : maunjaroPlans;
@@ -959,6 +1153,98 @@ function selectMode(mode) {
       <div class="plan-item-cal">${p.cal}</div>
     </div>
   `).join('');
+}
+
+// ── INJECTION OVERLAY ──
+let injStep = 1;
+let injTimer = null;
+function showInjectionOverlay() {
+  injStep = 1;
+  document.getElementById('injection-overlay').classList.add('show');
+  updateInjStep(1);
+  injTimer = setInterval(() => {
+    if (injStep < 5) {
+      injStep++;
+      updateInjStep(injStep);
+    } else {
+      clearInterval(injTimer);
+    }
+  }, 2200);
+}
+function updateInjStep(n) {
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`inj-step-${i}`).classList.toggle('active', i === n);
+  }
+  document.querySelectorAll('.inj-dot').forEach((d, i) => {
+    d.classList.toggle('on', i < n);
+  });
+}
+function closeInjectionOverlay() {
+  clearInterval(injTimer);
+  document.getElementById('injection-overlay').classList.remove('show');
+  setTimeout(() => showInjToast('💉 투약 완료! 약이 일하는 중이에요 🔬'), 800);
+}
+
+// ── REMINDER BAR ──
+const reminderMsgs = [
+  '💉 마운자로 맞으셨잖아요! 약이 지금 일하는 중이에요',
+  '배가 고프다고요? 가짜 허기예요 — 맞으셨잖아요! 💉',
+  '지금 이 순간도 식욕 억제 중 🔬 맞으셨으니까요!',
+  '덜 먹게 되는 게 당연해요 — 마운자로 효과예요 ✓',
+  '맞으셨어요 · 맞으셨어요 · 살 빠지고 있어요 💉💉💉',
+  '조금만 드세요 — 약이 도와주고 있잖아요! 🙌',
+];
+let reminderIdx = 0;
+let reminderTimer = null;
+function startReminderBar() {
+  stopReminderBar();
+  reminderIdx = 0;
+  document.getElementById('mbar-msg').textContent = reminderMsgs[0];
+  reminderTimer = setInterval(() => {
+    const el = document.getElementById('mbar-msg');
+    el.classList.add('fade');
+    setTimeout(() => {
+      reminderIdx = (reminderIdx + 1) % reminderMsgs.length;
+      el.textContent = reminderMsgs[reminderIdx];
+      el.classList.remove('fade');
+    }, 500);
+  }, 5000);
+  // Random injection toast every 30s
+  scheduleInjToast();
+}
+function stopReminderBar() {
+  clearInterval(reminderTimer);
+  clearTimeout(toastToHandle);
+}
+
+let toastToHandle = null;
+function scheduleInjToast() {
+  toastToHandle = setTimeout(() => {
+    if (state.mode === 'maunjaro') {
+      const toasts = [
+        '💉 지금도 약이 일하고 있어요! 맞으셨잖아요!',
+        '배고프세요? 아니에요!! 마운자로 효과예요 💉',
+        '소식하세요 — 맞으셨으니까 당연한 거예요 ✓',
+        '💉💉 맞으셨어요! 믿어요! 살 빠져요!!',
+      ];
+      showInjToast(toasts[Math.floor(Math.random() * toasts.length)]);
+      scheduleInjToast();
+    }
+  }, 28000 + Math.random() * 12000);
+}
+
+function showInjToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'inj-toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => t.classList.add('show'));
+  });
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 500);
+  }, 3500);
 }
 
 function initWater() {
@@ -996,6 +1282,18 @@ function toggleExercise(idx) {
   }
   updateStats();
   updateRings();
+}
+
+function resetToday() {
+  state.exerciseDone.clear();
+  state.calBurned = 0;
+  for (let i = 0; i < 9; i++) {
+    const el = document.getElementById(`ex-${i}`);
+    if (el) el.classList.remove('done');
+  }
+  updateStats();
+  updateRings();
+  spawnSparkle();
 }
 
 function logWorkout() {
